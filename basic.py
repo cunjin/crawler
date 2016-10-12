@@ -103,8 +103,8 @@ if __name__== "__main__":
             url_link = parsed_uri.path
             i+=1
             print i, "of", total, scheme, host, url_link
-            if(url_link!="#")
-            load_page_link(host, url_link, scheme)
+            if(url_link!="#"):
+                load_page_link(host, url_link, scheme)
             #domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
             #print domain
     except Exception, e:
