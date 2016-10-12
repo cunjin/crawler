@@ -1,6 +1,8 @@
 #/usr/lib/env python
 
 import httplib
+from bs4 import BeautifulSoup
+
 
 def load_page(host, url, scheme):
     try:
@@ -17,5 +19,15 @@ def load_page(host, url, scheme):
     return data
 
 if __name__== "__main__":
-    t = load_page("www.mataharimall.com","/","http")
-    print t
+    t = load_page("www.mataharimall.com","/","https")
+    #print(t)
+    soup = BeautifulSoup(t, 'html.parser')
+    t=soup.find_all('a')
+    url=None
+    for link in t:
+        rel = link.get('rel')
+        if(rel!=None):
+            if(''.join(rel)!='nofollow'): #for str in rel:
+                url= (link.get('href'))
+        else:
+            url=(link.get('href'))
