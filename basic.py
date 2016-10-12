@@ -8,7 +8,7 @@ from urlparse import urlparse
 
 user = "root"
 passw = "lenovo"
-host = "localhost"
+serverdb = "localhost"
 dba = "crawldb"
 
 
@@ -28,7 +28,7 @@ def load_page(host, url, scheme):
 
 def insertDB_link(url):
     # Open database connection
-    db = MySQLdb.connect(host, user, passw, dba )
+    db = MySQLdb.connect(serverdb, user, passw, dba )
 
     # prepare a cursor object using cursor() method
     cursor = db.cursor()
@@ -52,7 +52,7 @@ def insertDB_link(url):
 
 def load_link_from_db():
     # Open database connection
-    db = MySQLdb.connect(host, user, passw, dba )
+    db = MySQLdb.connect(serverdb, user, passw, dba )
     # prepare a cursor object using cursor() method
     cursor = db.cursor()
     # Prepare SQL query to INSERT a record into the database.
