@@ -89,19 +89,24 @@ if __name__== "__main__":
     links =  load_link_from_db()
     i=0
     total = len(links)
-    for url in links:
-        #print (url[1])
-        parsed_uri = urlparse(url[1])
-        scheme = parsed_uri.scheme
-        if(scheme==""):
-            scheme = "https"
-        if(parsed_uri.netloc==""):
-            host = "www.mataharimall.com"
-        else:
-            host = parsed_uri.netloc
-        url_link = parsed_uri.path
-        i+=1
-        print i, "of", total, scheme, host, url_link
-        load_page_link(host, url_link, scheme)
-        #domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
-        #print domain
+    try:
+        for url in links:
+            #print (url[1])
+            parsed_uri = urlparse(url[1])
+            scheme = parsed_uri.scheme
+            if(scheme==""):
+                scheme = "https"
+            if(parsed_uri.netloc==""):
+                host = "www.mataharimall.com"
+            else:
+                host = parsed_uri.netloc
+            url_link = parsed_uri.path
+            i+=1
+            print i, "of", total, scheme, host, url_link
+            if(url_link!="#")
+            load_page_link(host, url_link, scheme)
+            #domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+            #print domain
+    except Exception, e:
+        print e # coding=utf-8
+        pass
