@@ -4,7 +4,7 @@ import httplib
 from bs4 import BeautifulSoup
 import MySQLdb
 from urlparse import urlparse
-
+import json
 
 user = "root"
 passw = "lenovo"
@@ -85,8 +85,23 @@ def load_page_link(host, url, scheme):
             url=(link.get('href'))
         insertDB_link(url)
 
+def load_page_product_mm(host, url, scheme):
+    t = load_page(host, url,scheme)
+    #print t
+    st = t.find("var productObj = ")
+    en = t.find("[position].gtm_detail_product;", st)
+    t = t[st + len("var productObj = "): en]
+    x = json.loads(t)
+    for y in x:
+        print (json.dumps(y, sort_keys=True, indent=4, separators=(',', ': ')))
+        break
+
+    #print(t)
+
+
 if __name__== "__main__":
-    links =  load_link_from_db()
+    #links =  load_link_from_db()
+    links = [[1,"https://fashion.mataharimall.com/p-312/sepatu-pria"]]
     i=0
     total = len(links)
     try:
@@ -104,7 +119,8 @@ if __name__== "__main__":
             i+=1
             print i, "of", total, scheme, host, url_link
             if(url_link!="#"):
-                load_page_link(host, url_link, scheme)
+                #load_page_link(host, url_link, scheme)
+                load_page_product_mm(host, url_link, scheme)
             #domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
             #print domain
     except Exception, e:
