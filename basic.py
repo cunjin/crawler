@@ -140,17 +140,19 @@ def insertDB_product(data):
     db.close()
 
 def load_page_product_mm(host, url, scheme):
-    t = load_page(host, url,scheme)
-    #print t
-    st = t.find("var productObj = ")
-    en = t.find("[position].gtm_detail_product;", st)
-    t = t[st + len("var productObj = "): en]
-    x = json.loads(t)
-    for y in x:
-        #print (json.dumps(y, sort_keys=True, indent=4, separators=(',', ': ')))
-        insertDB_product(y)
-        #break
-
+    try:
+        t = load_page(host, url,scheme)
+        #print t
+        st = t.find("var productObj = ")
+        en = t.find("[position].gtm_detail_product;", st)
+        t = t[st + len("var productObj = "): en]
+        x = json.loads(t)
+        for y in x:
+            #print (json.dumps(y, sort_keys=True, indent=4, separators=(',', ': ')))
+            insertDB_product(y)
+            #break
+    except:
+        pass
     #print(t)
 
 
