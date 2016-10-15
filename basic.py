@@ -89,7 +89,7 @@ def load_page_link(host, url, scheme):
 def insertDB_product(data):
     # Open database connection
     db = MySQLdb.connect(serverdb, user, passw, dba )
-
+    fields = { `db_id`, `attribute_102_value`, `attribute_103_value`, `average_rating`, `badge_id`, `brand_name`, `category_ids`, `category_names`, `cicil_price`, `cod_enabled`, `created_time`, `discount`, `effective_price`, `effective_price_origin`, `gtm_detail_product`, `id`, `images`, `is_new`, `moderation_time`, `normal_price`, `normal_price_origin`, `path`, `product_sku`, `stock_available`, `store`, `store_id`, `store_name`, `store_url`, `title`, `variant_sku`, `update_time`}
     # prepare a cursor object using cursor() method
     cursor = db.cursor()
 
@@ -101,23 +101,24 @@ def insertDB_product(data):
     sql_v = ""
     sql_val = ""
     for key in data.keys():
-        #print key, "=", data.get(key)
-        exec("{0}={1}".format(key, json.dumps(data.get(key))))
-        #print key, type(eval(key))
-        if key in locals():
-            if(sql_v==""):
-                sql_v = "{0}".format(key)
-                sql_val = "{0}".format(json.dumps(data.get(key)))
-            else:
-                sql_v = "{0}, {1}".format(sql_v, key)
-                if((type(eval(key)) is list) or (type(eval(key)) is dict)   ):
-                    sql_val = "{0}, \"{1}\"".format(sql_val, str(data.get(key)).replace('\r', '').replace("\"","'"))
-                elif( (type(eval(key)) is str) ):
-                    sql_val = "{0}, \"{1}\"".format(sql_val, str(data.get(key)).replace('\r', '').replace("\"","'"))
-                elif((type(eval(key)) is bool)):
-                    sql_val = "{0}, \"{1}\"".format(sql_val, data.get(key))
+        if(key in fields):
+            #print key, "=", data.get(key)
+            exec("{0}={1}".format(key, json.dumps(data.get(key))))
+            #print key, type(eval(key))
+            if key in locals():
+                if(sql_v==""):
+                    sql_v = "{0}".format(key)
+                    sql_val = "{0}".format(json.dumps(data.get(key)))
                 else:
-                    sql_val = "{0}, {1}".format(sql_val, data.get(key))
+                    sql_v = "{0}, {1}".format(sql_v, key)
+                    if((type(eval(key)) is list) or (type(eval(key)) is dict)   ):
+                        sql_val = "{0}, \"{1}\"".format(sql_val, str(data.get(key)).replace('\r', '').replace("\"","'"))
+                    elif( (type(eval(key)) is str) ):
+                        sql_val = "{0}, \"{1}\"".format(sql_val, str(data.get(key)).replace('\r', '').replace("\"","'"))
+                    elif((type(eval(key)) is bool)):
+                        sql_val = "{0}, \"{1}\"".format(sql_val, data.get(key))
+                    else:
+                        sql_val = "{0}, {1}".format(sql_val, data.get(key))
 
     #print (brand_name)
     sql = """REPLACE INTO `t_product_mm`({0}) VALUES ({1})""".format(sql_v, sql_val)
