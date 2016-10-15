@@ -57,7 +57,7 @@ def load_link_from_db():
     # prepare a cursor object using cursor() method
     cursor = db.cursor()
     # Prepare SQL query to INSERT a record into the database.
-    sql = "SELECT * FROM t_crawllinks"
+    sql = "SELECT url FROM t_crawllinks group by URL"
     result = None
     try:
        # Execute the SQL command
@@ -167,7 +167,7 @@ if __name__== "__main__":
     try:
         for url in links:
             #print (url[1])
-            parsed_uri = urlparse(url[1])
+            parsed_uri = urlparse(url[0])
             scheme = parsed_uri.scheme
             if(scheme==""):
                 scheme = "https"
