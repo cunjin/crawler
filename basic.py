@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import MySQLdb
 from urlparse import urlparse
 import json
+from pprint import pprint
 
 user = "root"
 passw = "lenovo"
@@ -85,6 +86,59 @@ def load_page_link(host, url, scheme):
             url=(link.get('href'))
         insertDB_link(url)
 
+def insertDB_product(data):
+    # Open database connection
+    db = MySQLdb.connect(serverdb, user, passw, dba )
+
+    # prepare a cursor object using cursor() method
+    cursor = db.cursor()
+
+
+    # Prepare SQL query to INSERT a record into the database.
+    #print (json.dumps(data, sort_keys=True, indent=4, separators=(',', ': ')))
+    false = False
+    true = True
+    sql_v = ""
+    sql_val = ""
+    for key in data.keys():
+        #print key, "=", data.get(key)
+        exec("{0}={1}".format(key, json.dumps(data.get(key))))
+        #print key, type(eval(key))
+        if key in locals():
+            if(sql_v==""):
+                sql_v = "{0}".format(key)
+                sql_val = "{0}".format(json.dumps(data.get(key)))
+            else:
+                sql_v = "{0}, {1}".format(sql_v, key)
+                if((type(eval(key)) is list) or (type(eval(key)) is dict)   ):
+                    sql_val = "{0}, \"{1}\"".format(sql_val, str(data.get(key)).replace('\r', ''))
+                elif( (type(eval(key)) is str) or (type(eval(key)) is bool)):
+                    sql_val = "{0}, \"{1}\"".format(sql_val, data.get(key))
+                else:
+                    sql_val = "{0}, {1}".format(sql_val, data.get(key))
+
+    #print (brand_name)
+    sql = """REPLACE INTO `t_product_mm`({0}) VALUES ({1})""".format(sql_v, sql_val)
+    #sql = """REPLACE INTO `t_product_mm`(%s) VALUES (%s)"""
+
+    #print sql_v
+    #print sql_val
+    #pprint (sql)
+    try:
+       # Execute the SQL command
+       cursor.execute(sql)
+       # Commit your changes in the database
+       db.commit()
+       #print "",
+    except Exception, e:
+       print sql
+       print e
+       # Rollback in case there is any error
+       db.rollback()
+
+    # disconnect from server
+    db.close()
+
 def load_page_product_mm(host, url, scheme):
     t = load_page(host, url,scheme)
     #print t
@@ -93,8 +147,9 @@ def load_page_product_mm(host, url, scheme):
     t = t[st + len("var productObj = "): en]
     x = json.loads(t)
     for y in x:
-        print (json.dumps(y, sort_keys=True, indent=4, separators=(',', ': ')))
-        break
+        #print (json.dumps(y, sort_keys=True, indent=4, separators=(',', ': ')))
+        insertDB_product(y)
+        #break
 
     #print(t)
 
