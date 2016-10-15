@@ -112,7 +112,9 @@ def insertDB_product(data):
                 sql_v = "{0}, {1}".format(sql_v, key)
                 if((type(eval(key)) is list) or (type(eval(key)) is dict)   ):
                     sql_val = "{0}, \"{1}\"".format(sql_val, str(data.get(key)).replace('\r', '').replace("\"","'"))
-                elif( (type(eval(key)) is str) or (type(eval(key)) is bool)):
+                elif( (type(eval(key)) is str) ):
+                    sql_val = "{0}, \"{1}\"".format(sql_val, str(data.get(key)).replace('\r', '').replace("\"","'"))
+                elif((type(eval(key)) is bool)):
                     sql_val = "{0}, \"{1}\"".format(sql_val, data.get(key))
                 else:
                     sql_val = "{0}, {1}".format(sql_val, data.get(key))
