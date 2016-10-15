@@ -111,7 +111,7 @@ def insertDB_product(data):
             else:
                 sql_v = "{0}, {1}".format(sql_v, key)
                 if((type(eval(key)) is list) or (type(eval(key)) is dict)   ):
-                    sql_val = "{0}, \"{1}\"".format(sql_val, str(data.get(key)).replace('\r', ''))
+                    sql_val = "{0}, \"{1}\"".format(sql_val, str(data.get(key)).replace('\r', '').replace("\"","'"))
                 elif( (type(eval(key)) is str) or (type(eval(key)) is bool)):
                     sql_val = "{0}, \"{1}\"".format(sql_val, data.get(key))
                 else:
@@ -131,7 +131,7 @@ def insertDB_product(data):
        db.commit()
        #print "",
     except Exception, e:
-       print sql
+       #print sql
        print e
        # Rollback in case there is any error
        db.rollback()
@@ -155,8 +155,8 @@ def load_page_product_mm(host, url, scheme):
 
 
 if __name__== "__main__":
-    #links =  load_link_from_db()
-    links = [[1,"https://fashion.mataharimall.com/p-312/sepatu-pria"]]
+    links =  load_link_from_db()
+    #links = [[1,"https://fashion.mataharimall.com/p-312/sepatu-pria"]]
     i=0
     total = len(links)
     try:
