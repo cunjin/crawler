@@ -16,15 +16,18 @@ dba = "crawldb"
 def load_page(host, url, scheme):
     try:
         data = None
+        #print host, url, scheme
+        headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+        params = ""
         if (scheme=="https"):
             c = httplib.HTTPSConnection(host)
         elif (scheme=="http"):
             c = httplib.HTTPConnection(host)
-        c.request ("GET", url)
+        c.request ("GET", url, params, headers)
         response = c.getresponse()
         data = response.read()
     except Exception, e:
-        print e
+        print "load_page:", e
     return data
 
 def insertDB_link(tbl, url):
@@ -160,8 +163,8 @@ def load_page_product_mm(host, url, scheme):
 
 
 def crawllink():
-    #links =  load_link_from_db("t_crawl_bb")
-    links = [[1,"https://www.blibli.com"]]
+    links =  load_link_from_db("t_crawl_bb")
+    #links = [["https://www.blibli.com/"]]
     i=0
     total = len(links)
     try:
@@ -184,10 +187,10 @@ def crawllink():
             #domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
             #print domain
     except Exception, e:
-        print e # coding=utf-8
+        print "crawllink:", e # coding=utf-8
         pass
 
-def crawlproduct:
+def crawlproduct():
     links =  load_link_from_db("t_crawl_bb")
     #links = [[1,"https://fashion.mataharimall.com/p-312/sepatu-pria"]]
     i=0
@@ -214,7 +217,7 @@ def crawlproduct:
             #domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
             #print domain
     except Exception, e:
-        print e # coding=utf-8
+        print "crawlproduct: ", e # coding=utf-8
         pass
 
 if __name__== "__main__":
