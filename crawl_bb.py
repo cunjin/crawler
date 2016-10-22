@@ -243,5 +243,8 @@ def crawlproduct():
         pass
 
 if __name__== "__main__":
-    #crawllink()
-    crawlproduct()
+    if (len(sys.argv)>2):
+        if(sys.argv[2]=="link"):
+            crawllink()
+        if(sys.argv[2]=="product"):
+            crawlproduct()
