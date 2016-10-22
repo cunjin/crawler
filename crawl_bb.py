@@ -29,6 +29,7 @@ def load_page(host, url, scheme):
         data = response.read()
     except Exception, e:
         print "load_page:", e
+        pass
     return data
 
 def insertDB_link(tbl, url):
@@ -76,19 +77,22 @@ def load_link_from_db(tbl):
     return results
 
 def load_page_link(tbl, host, url, scheme):
-    t = load_page(host, url,scheme)
-    #print(t)
-    soup = BeautifulSoup(t, 'html.parser')
-    t=soup.find_all('a')
-    url=None
-    for link in t:
-        rel = link.get('rel')
-        if(rel!=None):
-            if(''.join(rel)!='nofollow'): #for str in rel:
-                url= (link.get('href'))
-        else:
-            url=(link.get('href'))
-        insertDB_link(tbl, url)
+    try:
+        t = load_page(host, url,scheme)
+        #print(t)
+        soup = BeautifulSoup(t, 'html.parser')
+        t=soup.find_all('a')
+        url=None
+        for link in t:
+            rel = link.get('rel')
+            if(rel!=None):
+                if(''.join(rel)!='nofollow'): #for str in rel:
+                    url= (link.get('href'))
+            else:
+                url=(link.get('href'))
+            insertDB_link(tbl, url)
+    except:
+        pass
 
 def insertDB_product(product_id, product_title, old_price, new_price,
 discount, image, link_page):
@@ -137,39 +141,73 @@ def load_page_product(host, url, scheme):
         soup = BeautifulSoup(t, 'html.parser')
         #print soup
         t=soup.find_all('div',attrs={"class" : "single-productset"})
-        #print t
-        for d in t:
-                #for x in st:
-            if(d!=None):
-                #d.text
-                #print str(d)
-                ss = BeautifulSoup(str(d),'html.parser')
-                product=ss.find('div',attrs={"class":"grid-custom columns"})
-                product_id = product.get('id')
-                product_title = ss.find('div', attrs={"class":"product-title"})
-                product_title = product_title.text.strip()
-                old_price = ss.find('span', attrs={"class":"old-price-text"})
-                if(old_price!=None):
-                    old_price = old_price.text.strip()
-                else:
-                    old_price = "None"
-                new_price = ss.find('span', attrs={"class":"new-price-text"})
-                if(new_price!=None):
-                    new_price = new_price.text.strip()
-                else:
-                    new_price = "None"
-                discount = ss.find('div', attrs={"class":"discount"})
-                if(discount!=None):
-                    discount = discount.text.strip()
-                else:
-                    discount = "None"
-                image = ss.find('img')
-                image = image.get('src')
-                link_page = ss.find('a')
-                link_page = link_page.get('href')
+        if(len(t)==0):
+            t=soup.find_all('div', attrs={"class":"product-detail-wrapper"})
+            for d in t:
+                if(d!=None):
+                    ss = BeautifulSoup(str(d),'html.parser')
+                    product_id = ss.find('a', attrs={"class":"single-product"}).get('href')
+                    product_title = ss.find('div', attrs={"class":"product-title"})
+                    product_title = product_title.text.strip()
+                    #print product_title
 
-                insertDB_product (product_id, product_title, old_price, new_price,
-                discount, image, link_page)
+                    old_price = ss.find('span', attrs={"class":"old-price-text"})
+                    if(old_price!=None):
+                        old_price = old_price.text.strip()
+                    else:
+                        old_price = "None"
+                    new_price = ss.find('span', attrs={"class":"new-price-text"})
+                    if(new_price!=None):
+                        new_price = new_price.text.strip()
+                    else:
+                        new_price = "None"
+                    discount = ss.find('div', attrs={"class":"discount"})
+                    if(discount!=None):
+                        discount = discount.text.strip()
+                    else:
+                        discount = "None"
+
+                    image = ss.find('img').get('src')
+                    link_page = product_id
+
+                    insertDB_product (product_id, product_title, old_price, new_price,
+                    discount, image, link_page)
+
+        #print t
+        else:
+            for d in t:
+                    #for x in st:
+                if(d!=None):
+                    #d.text
+                    #print str(d)
+                    ss = BeautifulSoup(str(d),'html.parser')
+                    product=ss.find('div',attrs={"class":"grid-custom columns"})
+                    product_id = product.get('id')
+                    product_title = ss.find('div', attrs={"class":"product-title"})
+                    product_title = product_title.text.strip()
+                    old_price = ss.find('span', attrs={"class":"old-price-text"})
+                    if(old_price!=None):
+                        old_price = old_price.text.strip()
+                    else:
+                        old_price = "None"
+                    new_price = ss.find('span', attrs={"class":"new-price-text"})
+                    if(new_price!=None):
+                        new_price = new_price.text.strip()
+                    else:
+                        new_price = "None"
+                    discount = ss.find('div', attrs={"class":"discount"})
+                    if(discount!=None):
+                        discount = discount.text.strip()
+                    else:
+                        discount = "None"
+                    image = ss.find('img')
+                    image = image.get('src')
+                    link_page = ss.find('a')
+                    link_page = link_page.get('href')
+                    #print (product_id, product_title, old_price, new_price,
+                    #discount, image, link_page)
+                    insertDB_product (product_id, product_title, old_price, new_price,
+                    discount, image, link_page)
                 #tt = s.find_all('div', attrs={"class":"grid-custom"})
                 #print d.get('class'), "=", d.text
             #break
@@ -186,9 +224,9 @@ def crawllink():
     links =  load_link_from_db("t_crawl_bb")
     #links = [["https://www.blibli.com/"]]
     i=0
-    if(links!=None):
-        total = len(links)
-        try:
+    try:
+        if(links!=None):
+            total = len(links)
             for url in links:
                 #print (url[1])
                 parsed_uri = urlparse(url[0])
@@ -207,13 +245,13 @@ def crawllink():
                     #load_page_product_mm(host, url_link, scheme)
                 #domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
                 #print domain
-        except Exception, e:
-            print "crawllink:", e # coding=utf-8
-            pass
+    except Exception, e:
+        print "crawllink:", e # coding=utf-8
+        pass
 
 def crawlproduct():
     links =  load_link_from_db("t_crawl_bb")
-    #links = [["https://www.blibli.com/handphone-tablet/54593"]]
+    #links = [["https://www.blibli.com/baju-etnik-pria/54817"]]
     i=0
     total = len(links)
     try:
@@ -244,8 +282,9 @@ def crawlproduct():
         pass
 
 if __name__== "__main__":
-    if (len(sys.argv)>2):
-        if(sys.argv[2]=="link"):
+    if (len(sys.argv)>=2):
+        #print(sys.argv)
+        if(sys.argv[1]=="link"):
             crawllink()
-        if(sys.argv[2]=="product"):
+        if(sys.argv[1]=="product"):
             crawlproduct()
