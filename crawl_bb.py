@@ -6,6 +6,7 @@ import MySQLdb
 from urlparse import urlparse
 import json
 from pprint import pprint
+import sys
 
 user = "root"
 passw = "lenovo"
