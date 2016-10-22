@@ -89,10 +89,11 @@ def load_page_link(tbl, host, url, scheme):
             url=(link.get('href'))
         insertDB_link(tbl, url)
 
-def insertDB_product(data):
+def insertDB_product(product_id, product_title, old_price, new_price,
+discount, image, link_page):
     # Open database connection
     db = MySQLdb.connect(serverdb, user, passw, dba )
-    fields = { `db_id`, `attribute_102_value`, `attribute_103_value`, `average_rating`, `badge_id`, `brand_name`, `category_ids`, `category_names`, `cicil_price`, `cod_enabled`, `created_time`, `discount`, `effective_price`, `effective_price_origin`, `gtm_detail_product`, `id`, `images`, `is_new`, `moderation_time`, `normal_price`, `normal_price_origin`, `path`, `product_sku`, `stock_available`, `store`, `store_id`, `store_name`, `store_url`, `title`, `variant_sku`, `update_time`}
+    #fields = { `db_id`, `attribute_102_value`, `attribute_103_value`, `average_rating`, `badge_id`, `brand_name`, `category_ids`, `category_names`, `cicil_price`, `cod_enabled`, `created_time`, `discount`, `effective_price`, `effective_price_origin`, `gtm_detail_product`, `id`, `images`, `is_new`, `moderation_time`, `normal_price`, `normal_price_origin`, `path`, `product_sku`, `stock_available`, `store`, `store_id`, `store_name`, `store_url`, `title`, `variant_sku`, `update_time`}
     # prepare a cursor object using cursor() method
     cursor = db.cursor()
 
@@ -101,30 +102,13 @@ def insertDB_product(data):
     #print (json.dumps(data, sort_keys=True, indent=4, separators=(',', ': ')))
     false = False
     true = True
-    sql_v = ""
-    sql_val = ""
-    for key in data.keys():
-        if(key in fields):
-            #print key, "=", data.get(key)
-            exec("{0}={1}".format(key, json.dumps(data.get(key))))
-            #print key, type(eval(key))
-            if key in locals():
-                if(sql_v==""):
-                    sql_v = "{0}".format(key)
-                    sql_val = "{0}".format(json.dumps(data.get(key)))
-                else:
-                    sql_v = "{0}, {1}".format(sql_v, key)
-                    if((type(eval(key)) is list) or (type(eval(key)) is dict)   ):
-                        sql_val = "{0}, \"{1}\"".format(sql_val, str(data.get(key)).replace('\r', '').replace("\"","'"))
-                    elif( (type(eval(key)) is str) ):
-                        sql_val = "{0}, \"{1}\"".format(sql_val, str(data.get(key)).replace('\r', '').replace("\"","'"))
-                    elif((type(eval(key)) is bool)):
-                        sql_val = "{0}, \"{1}\"".format(sql_val, data.get(key))
-                    else:
-                        sql_val = "{0}, {1}".format(sql_val, data.get(key))
+    sql_v = "id, product_title, old_price, new_price, discount, image, link_page"
+    sql_val = """\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\"""".format(product_id,
+    product_title, old_price, new_price, discount, image, link_page)
+
 
     #print (brand_name)
-    sql = """REPLACE INTO `t_product_mm`({0}) VALUES ({1})""".format(sql_v, sql_val)
+    sql = """REPLACE INTO `t_product_bb`({0}) VALUES ({1})""".format(sql_v, sql_val)
     #sql = """REPLACE INTO `t_product_mm`(%s) VALUES (%s)"""
 
     #print sql_v
@@ -145,19 +129,54 @@ def insertDB_product(data):
     # disconnect from server
     db.close()
 
-def load_page_product_mm(host, url, scheme):
+def load_page_product(host, url, scheme):
     try:
         t = load_page(host, url,scheme)
         #print t
-        st = t.find("var productObj = ")
-        en = t.find("[position].gtm_detail_product;", st)
-        t = t[st + len("var productObj = "): en]
-        x = json.loads(t)
-        for y in x:
-            #print (json.dumps(y, sort_keys=True, indent=4, separators=(',', ': ')))
-            insertDB_product(y)
+        soup = BeautifulSoup(t, 'html.parser')
+        #print soup
+        t=soup.find_all('div',attrs={"class" : "single-productset"})
+        #print t
+        for d in t:
+                #for x in st:
+            if(d!=None):
+                #d.text
+                #print str(d)
+                ss = BeautifulSoup(str(d),'html.parser')
+                product=ss.find('div',attrs={"class":"grid-custom columns"})
+                product_id = product.get('id')
+                product_title = ss.find('div', attrs={"class":"product-title"})
+                product_title = product_title.text.strip()
+                old_price = ss.find('span', attrs={"class":"old-price-text"})
+                if(old_price!=None):
+                    old_price = old_price.text.strip()
+                else:
+                    old_price = "None"
+                new_price = ss.find('span', attrs={"class":"new-price-text"})
+                if(new_price!=None):
+                    new_price = new_price.text.strip()
+                else:
+                    new_price = "None"
+                discount = ss.find('div', attrs={"class":"discount"})
+                if(discount!=None):
+                    discount = discount.text.strip()
+                else:
+                    discount = "None"
+                image = ss.find('img')
+                image = image.get('src')
+                link_page = ss.find('a')
+                link_page = link_page.get('href')
+
+                insertDB_product (product_id, product_title, old_price, new_price,
+                discount, image, link_page)
+                #tt = s.find_all('div', attrs={"class":"grid-custom"})
+                #print d.get('class'), "=", d.text
             #break
-    except:
+            #print (json.dumps(y, sort_keys=True, indent=4, separators=(',', ': ')))
+
+            #break
+    except Exception, e :
+        print e
         pass
     #print(t)
 
@@ -166,33 +185,34 @@ def crawllink():
     links =  load_link_from_db("t_crawl_bb")
     #links = [["https://www.blibli.com/"]]
     i=0
-    total = len(links)
-    try:
-        for url in links:
-            #print (url[1])
-            parsed_uri = urlparse(url[0])
-            scheme = parsed_uri.scheme
-            if(scheme==""):
-                scheme = "https"
-            if(parsed_uri.netloc==""):
-                host = "www.blibli.com"
-            else:
-                host = parsed_uri.netloc
-            url_link = parsed_uri.path
-            i+=1
-            print i, "of", total, scheme, host, url_link
-            if(url_link!="#"):
-                load_page_link("t_crawl_bb", host, url_link, scheme)
-                #load_page_product_mm(host, url_link, scheme)
-            #domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
-            #print domain
-    except Exception, e:
-        print "crawllink:", e # coding=utf-8
-        pass
+    if(links!=None):
+        total = len(links)
+        try:
+            for url in links:
+                #print (url[1])
+                parsed_uri = urlparse(url[0])
+                scheme = parsed_uri.scheme
+                if(scheme==""):
+                    scheme = "https"
+                if(parsed_uri.netloc==""):
+                    host = "www.blibli.com"
+                else:
+                    host = parsed_uri.netloc
+                url_link = parsed_uri.path
+                i+=1
+                print i, "of", total, scheme, host, url_link
+                if(url_link!="#"):
+                    load_page_link("t_crawl_bb", host, url_link, scheme)
+                    #load_page_product_mm(host, url_link, scheme)
+                #domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+                #print domain
+        except Exception, e:
+            print "crawllink:", e # coding=utf-8
+            pass
 
 def crawlproduct():
     links =  load_link_from_db("t_crawl_bb")
-    #links = [[1,"https://fashion.mataharimall.com/p-312/sepatu-pria"]]
+    #links = [["https://www.blibli.com/handphone-tablet/54593"]]
     i=0
     total = len(links)
     try:
@@ -211,7 +231,9 @@ def crawlproduct():
             print i, "of", total, scheme, host, url_link
             if(url_link!="#"):
                 #new load product page need for blibli
-                print '',
+                load_page_product(host, url_link, scheme)
+                #break
+                #print '',
                 #load_page_link(host, url_link, scheme)
                 #load_page_product_mm(host, url_link, scheme)
             #domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
@@ -221,4 +243,5 @@ def crawlproduct():
         pass
 
 if __name__== "__main__":
-    crawllink()
+    #crawllink()
+    crawlproduct()
